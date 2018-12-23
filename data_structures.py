@@ -172,11 +172,12 @@ class Tree(Generic[_T]):
                     predecessor = node
                     node = node.left
                 else:
-                    if predecessor.left is node:
-                        del node
+                    del node
+                    if predecessor is None:
+                        self.root = None
+                    elif predecessor.left is node:
                         predecessor.left = None
                     else:
-                        del node
                         predecessor.right = None
                     break
 
@@ -229,7 +230,7 @@ class AVLTree(Tree):
     pass
 
 
-t = Tree([4, 2, 1, 6, -1, 6], comparable=lambda x, y: x-y)
-
-t.remove(4)
-print(t.root)
+t = Tree([], comparable=lambda x, y: x-y)
+t.add(5)
+t.remove(5)
+t.pass_in_order(func=lambda x: print(x))
