@@ -123,7 +123,7 @@ class Queue(Generic[_T]):
 
 class Tree(Generic[_T]):
 
-    def __init__(self, *iterable: _T, comparable: Callable[[_T, _T], int]):
+    def __init__(self, iterable: List[_T], comparable: Callable[[_T, _T], int]):
 
         self.root = None
         self.comparable = comparable
@@ -229,7 +229,7 @@ class AVLTree(Tree):
     pass
 
 
-t = Tree(4, 2, 1, 6, -1, 6, comparable=lambda x, y: x-y)
+t = Tree([4, 2, 1, 6, -1, 6], comparable=lambda x, y: x-y)
 
 t.remove(4)
 print(t.root)
