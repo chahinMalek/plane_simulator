@@ -1,3 +1,4 @@
+import random
 from typing import Generic, List, TypeVar, Callable
 
 _T = TypeVar('_T')
@@ -191,6 +192,98 @@ class Stack(Generic[_T]):
         del self
 
 
+class Heap(Generic[_T]):
+
+    def __init__(self, iterable: List[_T], comparable: Callable[[_T, _T], int]):
+
+        self.comparable = comparable
+        self.heap = list(iterable)
+
+        if len(self.heap) != 0:
+            self.__make_heap()
+
+    @staticmethod
+    def __get_parent(index: int) -> int:
+        return index // 2
+
+    @staticmethod
+    def __get_left_child(index: int) -> int:
+        return 2 * index + 1
+
+    @staticmethod
+    def __get_right_child(index: int) -> int:
+        return 2 * index + 2
+
+    def __up_heap(self, index: int) -> int:
+
+        if not 0 <= index < len(self.heap):
+            raise IndexError('Index out of bounds exception!')
+
+        if index == 0:
+            return index
+
+        if 0 < index < len(self.heap):
+            p_index: int = Heap.__get_parent(index)
+
+            if self.comparable(self.heap[index], self.heap[p_index]) > 0:
+                self.heap[p_index], self.heap[index] = self.heap[index], self.heap[p_index]
+
+            return self.__up_heap(p_index)
+
+    def __down_heap(self, index: int) -> int:
+
+        if not 0 <= index < len(self.heap):
+            raise IndexError('Index out of bounds exception!')
+
+        l_child: int = Heap.__get_left_child(index)
+
+        if len(self.heap) <= l_child:
+            return index
+
+        r_child: int = l_child + 1 if l_child + 1 < len(self.heap) else l_child
+
+        if self.comparable(self.heap[r_child], self.heap[l_child]) > 0:
+            l_child = r_child
+
+        if self.comparable(self.heap[l_child], self.heap[index]) > 0:
+
+            self.heap[l_child], self.heap[index] = self.heap[index], self.heap[l_child]
+            return self.__down_heap(l_child)
+
+        else:
+            return index
+
+    def __make_heap(self) -> None:
+        index: int = len(self.heap) // 2
+
+        while index >= 0:
+            self.__down_heap(index)
+            index -= 1
+
+    def is_empty(self) -> bool:
+        return len(self.heap) == 0
+
+    def add(self, item: _T) -> None:
+        self.heap.append(item)
+        self.__up_heap(len(self.heap)-1)
+
+    def top(self) -> _T:
+        return self.heap[0] if len(self.heap) > 0 else None
+
+    def get(self) -> _T:
+
+        if len(self.heap) == 0:
+            return None
+
+        self.heap[0], self.heap[-1] = self.heap[-1], self.heap[0]
+        item: _T = self.heap.pop()
+
+        if len(self.heap) > 0:
+            self.__down_heap(0)
+
+        return item
+
+
 class Tree(Generic[_T]):
 
     def __init__(self, iterable: List[_T], comparable: Callable[[_T, _T], int]):
@@ -356,7 +449,6 @@ class AVLTree(Tree):
         node.height = max(AVLNode.get_height(node.left), AVLNode.get_height(node.right)) + 1
         return node
 
-    # todo test __balance method when erasing a tree node
     def __remove(self, node: TreeNode, item: _T) -> None:
 
         predecessor = None
@@ -396,8 +488,16 @@ class AVLTree(Tree):
                     break
             s.push(predecessor)
 
+        temp = self.__balance(s.pop())
         while not s.is_empty():
-            self.__balance(s.pop())
+
+            predecessor = s.pop()
+            if predecessor.right and self.comparable(predecessor.item, temp.item) >= 0:
+                predecessor.left = temp
+            else:
+                predecessor.right = temp
+
+            temp = self.__balance(predecessor)
 
     def __add(self, node: AVLNode, item: _T) -> None:
 
@@ -439,9 +539,9 @@ class AVLTree(Tree):
         return self.__remove(self.root, item)
 
 
-temp = [294, 409, 230, 138, 375, 122, 745, 280, 338, 507, 103, 886, 791, 20, 242, 506, 504, 508, 505, 507, 509, 510]
-items = [x for x in temp]
+coll = [x for x in random.sample(range(1000), 20)]
 
-t = AVLTree(items, comparable=lambda x, y: x-y)
+heap = Heap(coll, lambda x, y: -(x-y))
 
-t.pass_in_order(func=lambda x: print(x))
+while not heap.is_empty():
+    print(heap.get(), end=' ')
