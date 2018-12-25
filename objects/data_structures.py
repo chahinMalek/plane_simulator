@@ -1,4 +1,3 @@
-import random
 from typing import Generic, List, TypeVar, Callable
 
 _T = TypeVar('_T')
@@ -537,11 +536,3 @@ class AVLTree(Tree):
 
     def remove(self, item: _T) -> None:
         return self.__remove(self.root, item)
-
-
-coll = [x for x in random.sample(range(1000), 20)]
-
-heap = Heap(coll, lambda x, y: -(x-y))
-
-while not heap.is_empty():
-    print(heap.get(), end=' ')
