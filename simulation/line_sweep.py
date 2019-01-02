@@ -1,7 +1,5 @@
 from bintrees import AVLTree as AVL
 
-from bintrees import AVLTree as AVL
-
 from objects.geometric_objects import Point3, Sphere
 
 points = [
