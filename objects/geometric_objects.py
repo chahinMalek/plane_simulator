@@ -13,6 +13,19 @@ class Point2(object):
     def from_tuple(cls, p_tuple: Tuple[float, float]) -> 'Point2':
         return cls(*p_tuple)
 
+    @staticmethod
+    def orientation(p1: 'Point2', p2: 'Point2', p3: 'Point2') -> int:
+
+        v1: 'Point2' = p2 - p1
+        v2: 'Point2' = p3 - p1
+        theta: float = v1.x * v2.y - v2.x * v1.y
+
+        if theta > 0:
+            return 1
+        elif theta < 0:
+            return -1
+        return 0
+
     def __repr__(self) -> str:
         return '({}, {})'.format(self.x, self.y)
 
@@ -88,18 +101,116 @@ class Segment2(object):
         self.start = start
         self.end = end
 
+    def is_vertical(self):
+        return self.start.x == self.end.x
+
+    def __contains__(self, point: 'Point2'):
+
+        if Point2.orientation(self.start, self.end, point) != 0:
+            return False
+
+        if self.is_vertical():
+            return min(self.start.y, self.end.y) <= point.y <= max(self.start.y, self.end.y)
+
+        return min(self.start.x, self.end.x) <= point.x <= max(self.start.x, self.end.x)
+
     def intersects(self, s: 'Segment2') -> bool:
-        # todo mchahin, implement this method treating a vertex intersection as a legal segment intersection
-        pass
+
+        o1 = Point2.orientation(self.start, self.end, s.start)
+        o2 = Point2.orientation(self.start, self.end, s.end)
+        o3 = Point2.orientation(s.start, s.end, self.start)
+        o4 = Point2.orientation(s.start, s.end, self.end)
+
+        if o1 != o2 and o3 != o4:
+            return True
+
+        if o1 == 0 and s.start in self:
+            return True
+
+        if o2 == 0 and s.end in self:
+            return True
+
+        if o3 == 0 and self.start in s:
+            return True
+
+        if o4 == 0 and self.end in s:
+            return True
+
+        return False
 
 
 class Polygon(object):
 
     def __init__(self, vertices: List[Point2] = None):
+
+        if len(vertices) <= 2:
+            raise ValueError('Cannot create poly with less than two vertices.')
+
         self.vertices = Polygon.simplify_poly(vertices) if vertices is not None else []
+        self.is_convex = self.is_convex()
+
+    def __getitem__(self, index: int) -> Point2:
+        return self.vertices[index]
 
     def __repr__(self):
         return self.vertices.__repr__()
+
+    def is_convex(self):
+
+        if len(self.vertices) <= 2:
+            return True
+
+        ori: int = Point2.orientation(self.vertices[0], self.vertices[1], self.vertices[2])
+        n: int = len(self.vertices)
+
+        for i in range(n):
+            if Point2.orientation(self.vertices[i], self.vertices[(i+1) % n], self.vertices[(i+2) % n]) != ori:
+                return False
+
+        return True
+
+    def __contains__(self, point: 'Point2') -> bool:
+
+        if self.is_convex:
+
+            def is_in_convex_poly(points: List[Point2], point: Point2) -> bool:
+
+                if len(points) == 3:
+
+                    p1 = points[0]
+                    p2 = points[1]
+                    p3 = points[2]
+
+                    ori = True
+
+                    ori &= Point2.orientation(p1, p2, point) >= 0
+                    ori &= Point2.orientation(p2, p3, point) >= 0
+                    ori &= Point2.orientation(p3, p1, point) >= 0
+
+                    return ori
+
+                mid = len(points) // 2
+
+                if Point2.orientation(points[0], points[mid], point) >= 0:
+                    return is_in_convex_poly(points[mid:] + [points[0]], point)
+
+                return is_in_convex_poly(points[:mid + 1], point)
+
+            return is_in_convex_poly(self.vertices, point)
+
+        else:
+            min_p = min(self.vertices, key=lambda p: p.x)
+            ref_p = Point2(min_p.x - 1, min_p.y)
+
+            n: int = len(self.vertices)
+            seg = Segment2(point, ref_p)
+            counter: int = 0
+
+            for i in range(n):
+                if Segment2(self.vertices[i], self.vertices[(i+1)%n]).intersects(seg):
+                    counter += 1
+
+            return counter % 2 == 1
 
     @staticmethod
     def simplify_poly(vertices: List[Point2]) -> List[Point2]:
@@ -149,7 +260,7 @@ class Circle(object):
     def __hash__(self):
         return self.center, self.radius
 
-    #todo remove
+    # todo remove
     def __str__(self):
         return 'c: {}, r: {}'.format(self.center, self.radius)
 
@@ -160,7 +271,6 @@ class Circle(object):
 class Sphere(Circle):
 
     def __init__(self, center: Point3, radius: float):
-
         super().__init__(center, radius)
         self.center = center
         self.radius = radius
@@ -173,6 +283,13 @@ class Sphere(Circle):
 
 
 if __name__ == '__main__':
-    p = [(817, 572), (1070, 254), (950, 280), (1112, 422)]
-    print([(x[0]//100, x[1]//100) for x in p])
-    print(Polygon.simplify_poly([Point2.from_tuple(x) for x in p]))
+    # p = [(817, 572), (1070, 254), (950, 280), (1112, 422)]
+    # print([(x[0] // 100, x[1] // 100) for x in p])
+    # print(Polygon.simplify_poly([Point2.from_tuple(x) for x in p]))
+
+    points = [(0, 0), (1, 0), (1, 1), (0, 1), (0.5, 0.5)]
+    polygon = Polygon([Point2.from_tuple(x) for x in points])
+
+    # print(polygon)
+    # print(Point2.orientation(polygon[-1], polygon[1], Point2(0.1, 0.2)))
+    print(Point2(0, 0.000001) in polygon)

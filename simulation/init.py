@@ -9,11 +9,11 @@ with open('../resources/constants.json', 'r') as f:
     CONSTANTS = json.load(f)
 
 
-def get_color(key):
+def get_color(key: str) -> Tuple:
     return tuple(int(x) for x in CONSTANTS[key].split(','))
 
 
-def flip_height(position: Tuple[int, int]):
+def flip_height(position: Tuple[int, int]) -> Tuple[int, int]:
     return position[0], info.current_h - position[1]
 
 
@@ -61,6 +61,8 @@ while running:
             polygon.append(Point2.from_tuple(flip_height(pygame.mouse.get_pos())))
 
     pygame.display.update()
-    clock.tick(1)
+
+    # todo remove comment
+    # clock.tick(1)
 
 pygame.quit()
