@@ -1,26 +1,28 @@
 from bintrees import AVLTree as AVL
 
-from objects.geometric_objects import Circle, Point2
+from bintrees import AVLTree as AVL
+
+from objects.geometric_objects import Point3, Sphere
 
 points = [
-    Point2(-6, 3),
-    Point2(-5, 2),
-    Point2(4.72, 2.01),
-    Point2(-4.24, 6.33),
-    Point2(-2, 4),
-    Point2(-1.76, -3.15),
-    Point2(-1.4, -1.19),
-    Point2(4.76, 3.69),
+    Point3(-6, 3, 0),
+    Point3(-5, 2, 0.8),
+    Point3(4.72, 2.01, 0.2),
+    Point3(-4.24, 6.33, 0),
+    Point3(-2, 4, 0),
+    Point3(-1.76, -3.15, 0),
+    Point3(-2, -1.19, 0.3),
+    Point3(4.76, 3.69, 0.1),
 ]
 
-circles = [Circle(center=x, radius=1) for x in points]
+spheres = [Sphere(center=x, radius=1) for x in points]
 
 start_points_map = {}
 end_points_map = {}
 
-for index, circle in enumerate(circles):
-    start_points_map[(circle.center.x - circle.radius, circle.center.y)] = index
-    end_points_map[(circle.center.x + circle.radius, circle.center.y)] = index
+for index, sphere in enumerate(spheres):
+    start_points_map[(sphere.center.x - sphere.radius, sphere.center.y)] = index
+    end_points_map[(sphere.center.x + sphere.radius, sphere.center.y)] = index
 
 event_points = [x for x in start_points_map.keys()]
 event_points.extend(x for x in end_points_map.keys())
@@ -34,30 +36,30 @@ tree = AVL()
 while len(start_points) > 0 and len(end_points) > 0:
 
     if start_points[-1] <= end_points[-1]:
-        circle = circles[start_points_map[start_points[-1]]]
-        tree.insert(circle.center, circle)
+        sphere = spheres[start_points_map[start_points[-1]]]
+        tree.insert(sphere.center, sphere)
 
         try:
-            key = circle.center
+            key = sphere.center
 
             while True:
                 prev = tree.prev_item(key)[1]
 
-                if prev.intersects(circle):
-                    print('Intersection found: {} and {}'.format(prev, circle))
+                if prev.intersects(sphere):
+                    print('Intersection found: {} and {}'.format(prev, sphere))
                 key = prev.center
 
         except KeyError:
             pass
 
         try:
-            key = circle.center
+            key = sphere.center
 
             while True:
                 prev = tree.succ_item(key)[1]
 
-                if prev.intersects(circle):
-                    print('Intersection found: {} and {}'.format(prev, circle))
+                if prev.intersects(sphere):
+                    print('Intersection found: {} and {}'.format(prev, sphere))
                 key = prev.center
 
         except KeyError:
@@ -66,10 +68,10 @@ while len(start_points) > 0 and len(end_points) > 0:
         start_points.pop()
 
     else:
-        tree.remove(circles[end_points_map[end_points[-1]]].center)
+        tree.remove(spheres[end_points_map[end_points[-1]]].center)
         end_points.pop()
 
 
 while len(end_points) > 0:
-    tree.remove(circles[end_points_map[end_points[-1]]].center)
+    tree.remove(spheres[end_points_map[end_points[-1]]].center)
     end_points.pop()
