@@ -25,11 +25,28 @@ class Point2(object):
     def __eq__(self, p: 'Point2') -> bool:
         return self.x == p.x and self.y == p.y
 
+    def __cmp__(self, other: 'Point2'):
+
+        if self < other:
+            return -1
+        elif self > other:
+            return 1
+        return 0
+
     def __le__(self, p: 'Point2') -> bool:
         return self < p or self == p
 
     def __ge__(self, p: 'Point2') -> bool:
         return self > p or self == p
+
+    def __add__(self, p: 'Point2') -> 'Point2':
+        return Point2(self.x + p.x, self.y + p.y)
+
+    def __sub__(self, p: 'Point2') -> 'Point2':
+        return self + (-p)
+
+    def __neg__(self) -> 'Point2':
+        return Point2(-self.x, -self.y)
 
     def to_tuple(self) -> Tuple:
         return self.x, self.y
@@ -45,7 +62,7 @@ class Point2(object):
 
     def angle_between(self, p: 'Point2') -> float:
 
-        angle = p.slope() - self.slope()
+        angle = (p - self).slope()
         return angle if angle >= 0.0 else 360.0 + angle
 
 
@@ -65,10 +82,21 @@ class Point3(Point2):
         return sqrt((self.x - p.x) ** 2 + (self.y - p.y) ** 2 + (self.z - p.z) ** 2)
 
 
+class Segment2(object):
+
+    def __init__(self, start: Point2, end: Point2):
+        self.start = start
+        self.end = end
+
+    def intersects(self, s: 'Segment2') -> bool:
+        # todo mchahin, implement this method treating a vertex intersection as a legal segment intersection
+        pass
+
+
 class Polygon(object):
 
-    def __init__(self, vertices: List[Point2]):
-        self.vertices = Polygon.simplify_poly(vertices)
+    def __init__(self, vertices: List[Point2] = None):
+        self.vertices = Polygon.simplify_poly(vertices) if vertices is not None else []
 
     def __repr__(self):
         return self.vertices.__repr__()
@@ -76,7 +104,7 @@ class Polygon(object):
     @staticmethod
     def simplify_poly(vertices: List[Point2]) -> List[Point2]:
 
-        index, _ = min(enumerate(vertices), key=lambda p: (p[1].y, p[1].x))
+        index, _ = min(enumerate(vertices), key=lambda p: (p[1].y, -p[1].x))
 
         # swap only if necessary
         if index != 0:
@@ -104,6 +132,30 @@ class Circle(object):
     def intersects(self, c: 'Circle') -> bool:
         return self.center.distance_between(c.center) <= self.radius + c.radius
 
+    def __lt__(self, other: 'Circle'):
+        return self.center < other.center or (self.center == other.center and self.radius <= other.radius)
+
+    def __eq__(self, other: 'Circle'):
+        return self.center == other.center and self.radius == other.radius
+
+    def __cmp__(self, other):
+
+        if self == other:
+            return 0
+        elif self < other:
+            return -1
+        return 1
+
+    def __hash__(self):
+        return self.center, self.radius
+
+    #todo remove
+    def __str__(self):
+        return 'c: {}, r: {}'.format(self.center, self.radius)
+
+    def __repr__(self):
+        return self.__str__()
+
 
 class Sphere(Circle):
 
@@ -118,3 +170,9 @@ class Sphere(Circle):
 
     def intersects(self, s: 'Sphere'):
         return self.center.distance_between(s.center) <= self.radius + s.radius
+
+
+if __name__ == '__main__':
+    p = [(817, 572), (1070, 254), (950, 280), (1112, 422)]
+    print([(x[0]//100, x[1]//100) for x in p])
+    print(Polygon.simplify_poly([Point2.from_tuple(x) for x in p]))

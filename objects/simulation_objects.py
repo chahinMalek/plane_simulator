@@ -19,3 +19,13 @@ class Plane(object):
         self.position = position
         self.velocity = velocity
         self.cd_sphere = Sphere(self.position, radius)
+
+
+class Flight(object):
+
+    def __init__(self, plane: Plane, to_segment, c_segment, l_segment):
+
+        self.plane = plane
+        self.to_segment = to_segment
+        self.c_segment = c_segment
+        self.l_segment = l_segment
