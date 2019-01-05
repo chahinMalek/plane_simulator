@@ -10,8 +10,18 @@ class Point2(object):
         self.y = y
 
     @classmethod
-    def from_tuple(cls, p_tuple: Tuple[float, float]) -> 'Point2':
-        return cls(*p_tuple)
+    def from_tuple(cls, p_tuple: Tuple) -> 'Point2':
+        return cls(*p_tuple[:2])
+
+    @classmethod
+    def from_point3(cls, point: 'Point3', freeze_coordinate: int = 2) -> 'Point2':
+
+        if freeze_coordinate == 2:
+            return cls(point.x, point.y)
+        elif freeze_coordinate == 1:
+            return cls(point.x, point.z)
+        else:
+            return cls(point.y, point.z)
 
     @staticmethod
     def orientation(p1: 'Point2', p2: 'Point2', p3: 'Point2') -> int:
@@ -61,6 +71,12 @@ class Point2(object):
     def __neg__(self) -> 'Point2':
         return Point2(-self.x, -self.y)
 
+    def __mul__(self, value: float) -> 'Point2':
+        return Point2(self.x * value, self.y * value)
+
+    def __rmul__(self, value: float) -> 'Point2':
+        return self.__mul__(value)
+
     def to_tuple(self) -> Tuple:
         return self.x, self.y
 
@@ -88,6 +104,21 @@ class Point3(Point2):
     def __repr__(self) -> str:
         return '({}, {}, {})'.format(self.x, self.y, self.z)
 
+    def __add__(self, p: 'Point3') -> 'Point3':
+        return Point3(self.x + p.x, self.y + p.y, self.z + p.z)
+
+    def __sub__(self, p: 'Point3') -> 'Point3':
+        return self + (-p)
+
+    def __neg__(self) -> 'Point3':
+        return Point3(-self.x, -self.y, -self.z)
+
+    def __mul__(self, value: float) -> 'Point3':
+        return Point3(self.x * value, self.y * value, self.z * value)
+
+    def __rmul__(self, value: float) -> 'Point3':
+        return self.__mul__(value)
+
     def to_tuple(self) -> Tuple:
         return self.x, self.y, self.z
 
@@ -100,6 +131,9 @@ class Segment2(object):
     def __init__(self, start: Point2, end: Point2):
         self.start = start
         self.end = end
+
+    def get_point(self, t: float) -> Point2:
+        return self.start + t * (self.end - self.start)
 
     def is_vertical(self):
         return self.start.x == self.end.x
@@ -137,6 +171,29 @@ class Segment2(object):
             return True
 
         return False
+
+    def length(self) -> float:
+        return self.start.distance_between(self.end)
+
+
+class Segment3(object):
+
+    def __init__(self, start: 'Point3', end: 'Point3'):
+        self.start = start
+        self.end = end
+
+    def get_point(self, t: float) -> Point3:
+
+        point = self.start + t * (self.end - self.start)
+
+        point.x = round(point.x)
+        point.y = round(point.y)
+        point.z = round(point.z)
+
+        return point
+
+    def length(self) -> float:
+        return self.start.distance_between(self.end)
 
 
 class Polygon(object):
@@ -200,7 +257,7 @@ class Polygon(object):
 
         else:
             min_p = min(self.vertices, key=lambda p: p.x)
-            ref_p = Point2(min_p.x - 1, min_p.y)
+            ref_p = Point2(min_p.x - 1, point.y)
 
             n: int = len(self.vertices)
             seg = Segment2(point, ref_p)
@@ -283,13 +340,6 @@ class Sphere(Circle):
 
 
 if __name__ == '__main__':
-    # p = [(817, 572), (1070, 254), (950, 280), (1112, 422)]
-    # print([(x[0] // 100, x[1] // 100) for x in p])
-    # print(Polygon.simplify_poly([Point2.from_tuple(x) for x in p]))
 
-    points = [(0, 0), (1, 0), (1, 1), (0, 1), (0.5, 0.5)]
-    polygon = Polygon([Point2.from_tuple(x) for x in points])
-
-    # print(polygon)
-    # print(Point2.orientation(polygon[-1], polygon[1], Point2(0.1, 0.2)))
-    print(Point2(0, 0.000001) in polygon)
+    s = Segment3(Point3(0, 0, 0), Point3(1, 1, 1))
+    print(s.get_point(0.5))

@@ -1,31 +1,50 @@
-from typing import List
+from random import randint
 
-from objects.geometric_objects import Point3, Sphere, Polygon, Point2
-
-
-class FlightSpace(object):
-
-    def __init__(self, vertices: List[Point2], min_altitude: float = 0.0, max_altitude: float = 0.0):
-        self.vertices = Polygon(vertices)
-        self.min_altitude = min_altitude
-        self.max_altitude = max_altitude
+from objects.geometric_objects import Segment3, Point3
 
 
 class Plane(object):
 
-    def __init__(self, tag: str, position: Point3, velocity: float, radius: float):
+    __COUNTER = 0
 
-        self.tag = tag
-        self.position = position
+    def __init__(self, velocity: float, radius: float):
+
+        self.id = Plane.__COUNTER
         self.velocity = velocity
-        self.cd_sphere = Sphere(self.position, radius)
+        self.radius = radius
+        Plane.__COUNTER += 1
 
 
 class Flight(object):
 
-    def __init__(self, plane: Plane, to_segment, c_segment, l_segment):
+    def __init__(self, path: Segment3, velocity: float, radius: float):
 
-        self.plane = plane
-        self.to_segment = to_segment
-        self.c_segment = c_segment
-        self.l_segment = l_segment
+        self.path = path
+        self.plane = Plane(velocity, radius)
+
+    def __eq__(self, other: 'Flight'):
+        return self.plane.id == other.plane.id
+
+    @classmethod
+    def get_random_flight(cls, min_x, max_x, min_y, max_y, min_h, max_h, velocity, radius) -> 'Flight':
+
+        return Flight(
+            Segment3(
+                Point3(randint(min_x, max_x), randint(min_y, max_y), randint(min_h, max_h)),
+                Point3(randint(min_x, max_x), randint(min_y, max_y), randint(min_h, max_h))
+            ),
+            velocity,
+            radius
+        )
+
+    def get_plane_position(self):
+
+        t: float = 0
+        coefficient = self.plane.velocity / self.path.length()
+
+        while t <= 1:
+            current_position = self.path.get_point(t)
+            yield current_position
+            t += coefficient
+
+        return None
