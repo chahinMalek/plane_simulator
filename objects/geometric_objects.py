@@ -337,9 +337,3 @@ class Sphere(Circle):
 
     def intersects(self, s: 'Sphere'):
         return self.center.distance_between(s.center) <= self.radius + s.radius
-
-
-if __name__ == '__main__':
-
-    s = Segment3(Point3(0, 0, 0), Point3(1, 1, 1))
-    print(s.get_point(0.5))
