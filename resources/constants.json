@@ -2,9 +2,9 @@
   "title": "Plane simulator",
 
   "min_height": 5,
-  "max_height": 21,
+  "max_height": 200,
 
-  "plane_radius": 5,
+  "plane_radius": 30,
   "plane_min_velocity": 1,
   "plane_max_velocity": 1,
 
@@ -21,6 +21,8 @@
     [1000, 800],
     [1675, 915],
     [1304, 231],
-    [175, 175]
+    [175, 175],
+    [300, 300],
+    [754, 321]
   ]
 }

@@ -34,6 +34,11 @@ pygame.display.flip()
 
 area = Polygon([Point2.from_tuple(point) for point in CONSTANTS['flight_area']])
 
+min_x = min(area, key=lambda p: p.x).x
+max_x = max(area, key=lambda p: p.x).x
+min_y = min(area, key=lambda p: p.y).y
+max_y = max(area, key=lambda p: p.y).y
+
 # list of flight generators
 flights = []
 
@@ -51,22 +56,6 @@ while running:
         2
     )
 
-    if time() - start >= CONSTANTS['fg_period']:
-
-        flights_to_generate = random.randint(CONSTANTS['min_fcount'], CONSTANTS['max_fcount'])
-
-        for _ in range(flights_to_generate):
-
-            flights.append(Flight.get_random_flight(
-                0, WIDTH,
-                0, HEIGHT,
-                CONSTANTS['min_height'], CONSTANTS['max_height'],
-                10,
-                CONSTANTS['plane_radius']
-            ).get_plane_position())
-
-        start = time()
-
     points = []
 
     for flight in flights:
@@ -82,6 +71,35 @@ while running:
             continue
 
     intersections = get_intersections([Sphere(point, CONSTANTS['plane_radius']) for point in points])
+
+    if time() - start >= CONSTANTS['fg_period']:
+
+        flights_to_generate = random.randint(CONSTANTS['min_fcount'], CONSTANTS['max_fcount'])
+
+        # todo generate random flight types
+        for _ in range(flights_to_generate):
+
+            generated_flight = Flight.get_random_flight(
+                min_x, max_x,
+                min_y, max_y,
+                CONSTANTS['min_height'], CONSTANTS['max_height'],
+                10,
+                CONSTANTS['plane_radius']
+            )
+
+            position = generated_flight.get_plane_position()
+            c_sphere = Sphere(next(position), CONSTANTS['plane_radius'])
+            valid_flight = True
+
+            for point in points:
+                if c_sphere.intersects(Sphere(point, CONSTANTS['plane_radius'])):
+                    valid_flight = False
+                    break
+
+            if valid_flight:
+                flights.append(position)
+
+        start = time()
 
     for point in points:
 

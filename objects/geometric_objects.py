@@ -138,6 +138,7 @@ class Segment2(object):
     def is_vertical(self):
         return self.start.x == self.end.x
 
+    # todo check if method is correct (i.e. point is collinear with a poly edge?)
     def __contains__(self, point: 'Point2'):
 
         if Point2.orientation(self.start, self.end, point) != 0:
