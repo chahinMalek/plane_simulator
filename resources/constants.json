@@ -6,9 +6,9 @@
 
   "plane_radius": 30,
   "plane_min_velocity": 1,
-  "plane_max_velocity": 1,
+  "plane_max_velocity": 10,
 
-  "fg_period": 10,
+  "fg_period": 3,
   "min_fcount": 15,
   "max_fcount": 25,
 

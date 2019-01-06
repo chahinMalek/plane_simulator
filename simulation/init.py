@@ -83,7 +83,7 @@ while running:
                 min_x, max_x,
                 min_y, max_y,
                 CONSTANTS['min_height'], CONSTANTS['max_height'],
-                10,
+                random.randint(CONSTANTS['plane_min_velocity'], CONSTANTS['plane_max_velocity']),
                 CONSTANTS['plane_radius']
             )
 
